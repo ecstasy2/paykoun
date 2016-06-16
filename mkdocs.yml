@@ -1,0 +1,42 @@
+site_name: Paykoun
+site_description: Documentation for job dispatching framework - Paykoun
+site_author: Bobo Diallo
+site_url: http://bobodiallo.com/paykoun
+
+# Repository
+repo_name: GitHub
+repo_url: https://github.com/edyn/paykoun
+
+# Options
+extra:
+  version: 0.2.3
+  logo: images/logo.png
+  author:
+    github: ecstasy2
+    twitter: bobo_doumba
+
+# Extensions
+markdown_extensions:
+  - codehilite(css_class=code)
+  - admonition
+  - toc:
+      permalink: '#'
+
+# theme_dir: 'mkdocs-material/material'
+theme: material
+
+# Page tree
+pages:
+  - Home: index.md
+  - Paykoun: paykoun.md
+  - Getting started: getting-started.md
+  - User Guide:
+    - 'Introduction': 'user-guide/introduction.md'
+    - 'Workers Explained': 'getting-started.md'
+    - 'Recurring jobs': 'getting-started.md'
+    - 'Logging': 'getting-started.md'
+    - 'Testing': 'getting-started.md'
+    - 'Built-in Metrics': 'getting-started.md'
+    - 'Helpers': 'getting-started.md'
+  - Plugins: getting-started.md
+  - License: getting-started.md
