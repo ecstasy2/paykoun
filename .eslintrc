@@ -1,0 +1,7 @@
+{
+  "extends": [
+    "defaults",
+    "defaults/rules/eslint/best-practices/walmart",
+    "defaults/rules/eslint/errors/airbnb"
+  ]
+}
