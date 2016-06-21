@@ -22,12 +22,11 @@ markdown_extensions:
   - toc:
       permalink: '#'
 
-# theme_dir: 'mkdocs-material/material'
-theme: material
+theme_dir: 'mkdocs-material/material'
+# theme: material
 
 # Page tree
 pages:
-  - Home: index.md
   - Paykoun: paykoun.md
   - Getting started: getting-started.md
   - User Guide:
