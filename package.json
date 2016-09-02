@@ -7,8 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "make test",
-    "lint": "make lint"
+    "test": "mocha --reporter spec",
+    "lint": "eslint .",
+    "compile": "babel --presets es2015,stage-0 -d dist/ lib/"
   },
   "repository": {
     "type": "git",
@@ -48,6 +49,9 @@
     "vasync": "^1.6.3"
   },
   "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-stage-0": "^6.5.0",
     "chai": "^2.2.0",
     "eslint": "^2.13.0",
     "eslint-config-defaults": "^9.0.0",
