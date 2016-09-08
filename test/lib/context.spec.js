@@ -228,6 +228,25 @@ describe('PaykounContext', () => {
       });
     })
 
+    it('fails if connectWorkQueue fail', (done) => {
+      _.each(context.workQueues, queue => sinon.spy(queue, 'stop'))
+
+      sinon
+        .stub(context, 'connectWorkQueue')
+        .yieldsAsync(null)
+        .onCall(0)
+        .yieldsAsync(new Error('connect error'));
+
+      context.run((err) => {
+        expect(err).to.match(/connect error/)
+        _.each(context.workQueues, queue => {
+          expect(queue.stop).to.not.have.been.calledOnce
+        })
+
+        done()
+      });
+    })
+
     it('fails if associated workQueueManager fails', (done) => {
       context.workQueueManager.shouldFailConnecting(true)
       context.run((err) => {

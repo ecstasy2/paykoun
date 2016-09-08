@@ -24,6 +24,11 @@ MockMgr.prototype.createQueue = function(queueName) {
         queue.emit('ready');
       });
     },
+    stop: function(){
+      process.nextTick(function(){
+        queue.emit('stopped');
+      });
+    },
     eventBus: new EventEmitter(),
     createJob: function(type, data){
       var job = new Job(type, data);
