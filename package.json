@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "mocha --compilers js:babel-register --reporter spec",
+    "test:e2e": "cucumberjs -f pretty --compiler=js:babel-core/register",
     "test:watch": "mocha -w --compilers js:babel-register --reporter spec",
+    "cuke:watch": "node cuke-watcher.js",
     "lint": "eslint .",
     "compile": "babel --presets es2015,stage-0 -d dist/ lib/"
   },
@@ -42,6 +44,7 @@
   },
   "homepage": "https://github.com/edyn/paykoun",
   "dependencies": {
+    "cucumber": "^1.2.2",
     "ikue": "~0.0.4",
     "lodash": "^3.6.0",
     "merge": "^1.2.0",
@@ -59,9 +62,11 @@
     "eslint-config-airbnb-base": "^5.0.3",
     "eslint-plugin-import": "^1.14.0",
     "mocha": "^2.2.1",
+    "mockery": "^1.7.0",
     "node-watch": "^0.4.0",
     "rewire": "^2.3.1",
     "sinon": "^1.14.1",
     "sinon-chai": "^2.7.0",
+    "tmp": "0.0.28"
   }
 }
