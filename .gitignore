@@ -4,3 +4,5 @@ site
 dist
 mkdocs-material
 npm-debug.log
+coverage/coverage.json
+coverage

@@ -7,9 +7,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-register --reporter spec",
+    "test:no-cover": "mocha --compilers js:babel-register",
+    "test": "./node_modules/.bin/babel-istanbul cover ./node_modules/.bin/_mocha ./test/",
     "test:e2e": "cucumberjs -f pretty --compiler=js:babel-core/register",
-    "test:watch": "mocha -w --compilers js:babel-register --reporter spec",
+    "test:watch": "mocha -w --compilers js:babel-register",
     "cuke:watch": "node cuke-watcher.js",
     "lint": "eslint .",
     "compile": "babel --presets es2015,stage-0 -d dist/ lib/"
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",
+    "babel-istanbul": "^0.11.0",
     "babel-preset-es2015": "^6.14.0",
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.14.0",
