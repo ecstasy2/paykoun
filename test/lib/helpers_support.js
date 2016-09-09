@@ -29,7 +29,7 @@ describe('Paykoun Test Context', () => {
     sayHelloSpy = sinon.spy();
     funcSpy = sinon.spy();
 
-    sayHelloWorker = sinon.spy((job, onJobDone) => {
+    sayHelloWorker = sinon.spy(function(job, onJobDone) {
       const $sayHello = this.$getHelper('sayHello');
       const $objectHelper = this.$getHelper('objectHelper');
 
@@ -49,7 +49,7 @@ describe('Paykoun Test Context', () => {
       work: sayHelloWorker,
     }));
 
-    failingWorkerFunc = sinon.spy((job, onJobDone) => {
+    failingWorkerFunc = sinon.spy(function(job, onJobDone) {
       try {
         this.$getHelper('unexistingHelper');
       } catch (e) {
@@ -106,10 +106,14 @@ describe('Paykoun Test Context', () => {
 
       const onDoneCall = failingWorkerFunc.firstCall.args[1];
 
-      assert(onDoneCall.calledOnce);
       expect(onDoneCall.firstCall.args[0])
         .to.match(/Error: Trying to use an unregistered helper function/);
       done();
     });
   });
+
+  it('helpers are availaible from helpers');
+  it('helpers are availaible using this.$helperName');
+  it('worker cannot overwrite helper property');
+  it('worker running context is not reused by different workers or consecutive runs');
 });
