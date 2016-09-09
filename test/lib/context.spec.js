@@ -368,7 +368,7 @@ describe('PaykounContext', () => {
               id: match.string,
             }))
 
-            workerOneSpy.called.should.equal(false);
+            expect(workerOneSpy2).to.have.been.called;
 
             done();
           })

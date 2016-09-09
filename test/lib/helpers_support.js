@@ -76,7 +76,7 @@ describe('Paykoun Test Context', function(){
     queue.pushJob('sayHello', {name: 'Hello world'});
 
     queue.flush(function(){
-      sayHelloSpy.called.should.equal(true, 'The helper should have been called');
+      expect(sayHelloSpy).to.have.been.called;
 
       var helperCall = sayHelloSpy.firstCall;
       expect(helperCall).to.not.have.thrown();
@@ -92,8 +92,7 @@ describe('Paykoun Test Context', function(){
     queue.pushJob('sayHello', {name: 'Hello world'});
 
     queue.flush(function(){
-      sayHelloSpy.called.should.equal(true, 'The helper should have been called');
-
+      expect(sayHelloSpy).to.have.been.called;
       var helperCall = sayHelloSpy.firstCall;
       expect(helperCall).to.not.have.thrown();
       expect(helperCall.args[0]).to.equal('Hello world');
