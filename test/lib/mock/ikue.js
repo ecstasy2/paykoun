@@ -3,11 +3,13 @@ var util = require('util');
 var sinon = require('sinon');
 var _ = require('lodash');
 var Job = require('ikue').Job;
+var EventBusAsync = require('ikue').EventBus;
 
 function MockMgr(){
   this.failConnecting = false;
   this.queues = [];
 
+  this.eventBus = new EventBusAsync()
 }
 
 util.inherits(MockMgr, EventEmitter);
@@ -29,7 +31,7 @@ MockMgr.prototype.createQueue = function(queueName) {
         queue.emit('stopped');
       });
     },
-    eventBus: new EventEmitter(),
+    eventBus: this.eventBus,
     createJob: function(type, data){
       var job = new Job(type, data);
       job.workQueue(this);
@@ -38,20 +40,9 @@ MockMgr.prototype.createQueue = function(queueName) {
     },
 
     pushJob: function(job, done){
-      setTimeout(function(){
-        this.eventBus.emit(job.type, job.data);
-
-        process.nextTick(function(){
-          if (job.fail) {
-
-            done(new Error("Job ("+ job.id + ") failed to run"));
-
-            return;
-          };
-
-          done(null, job.result);
-        })
-      }.bind(self), 1);
+      setTimeout(() => {
+        this.eventBus.trigger(job.type, job.data, done);
+      }, 1);
     }
   });
 
