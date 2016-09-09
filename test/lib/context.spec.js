@@ -1,3 +1,5 @@
+'use strict';
+
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-underscore-dangle */
 /* global it, describe, beforeEach, afterEach */
@@ -15,8 +17,8 @@ const chai = require('chai')
 const _ = require('lodash')
 const sinonChai = require('sinon-chai')
 const sinon = require('sinon')
-const vasync = require('vasync')
 const MockMgr = require('./mock/ikue')
+const Helpers = require('./helpers')
 
 const expect = chai.expect
 const match = sinon.match
@@ -24,21 +26,7 @@ const match = sinon.match
 
 chai.use(sinonChai);
 
-const pushJobsInContext = (jobs, context, isTest, done) => {
-  vasync.forEachParallel({
-    func: (jobParams, callback) => {
-      const job = context.createJob(jobParams.event, jobParams.data)
-
-      return job.send(callback)
-    },
-    inputs: jobs,
-  }, (err, res) => {
-    if (!err && isTest) {
-      return context.queue().flush(done)
-    }
-    return done(err, res);
-  })
-}
+const { pushJobsInContext } = Helpers;
 
 describe('PaykounContext', () => {
   ['test', 'real'].forEach((contextType) => {
