@@ -3,119 +3,145 @@
 /* global beforeEach, describe, it */
 /* eslint-disable no-unused-expressions */
 
-const paykounPath = '../../lib/paykoun';
 
 const chai = require('chai');
 const sinon = require('sinon');
-const sinonChai = require('sinon-chai');
+const sinonChai = require('sinon-chai')
+const Paykoun = require('../../lib/paykoun')
+const PaykounContext = require('../../lib/context')
+const MockMgr = require('./mock/ikue')
+const Helpers = require('./helpers')
 
 const expect = chai.expect;
 const assert = chai.assert;
 chai.use(sinonChai);
 
-const Paykoun = require(paykounPath);
 
+const { pushJobsInContext } = Helpers;
 
-describe('Paykoun Test Context', () => {
-  let context = null;
-  let queue = null;
-  let sayHelloWorker = null;
-  let failingWorkerFunc = null;
-  let sayHelloSpy = null;
-  let funcSpy = null;
+describe('helpers support', () => {
+  let isTestContext = null;
 
-  beforeEach((done) => {
-    context = Paykoun.createTestContext();
-    queue = context.queue();
+  ['test', 'real'].forEach((contextType) => {
+    describe(`(${contextType})`, () => {
+      let context = null;
+      let sayHelloWorker = null;
+      let failingWorkerFunc = null;
+      let sayHelloSpy = null;
+      let funcSpy = null;
 
-    sayHelloSpy = sinon.spy();
-    funcSpy = sinon.spy();
+      beforeEach(() => {
+        isTestContext = contextType === 'test'
+        const queueMgr = new MockMgr()
+        if (contextType === 'real') {
+          context = new PaykounContext(queueMgr)
+        } else {
+          context = Paykoun.createTestContext();
+        }
+      })
 
-    sayHelloWorker = sinon.spy(function(job, onJobDone) {
-      const $sayHello = this.$getHelper('sayHello');
-      const $objectHelper = this.$getHelper('objectHelper');
+      beforeEach((done) => {
+        sayHelloSpy = sinon.spy();
+        funcSpy = sinon.spy();
 
-      $objectHelper.func();
-      $sayHello(job.name);
+        sayHelloWorker = sinon.spy(function(job, onJobDone) {
+          const $sayHello = this.$getHelper('sayHello');
+          const $objectHelper = this.$getHelper('objectHelper');
 
-      onJobDone(null, null);
-    });
+          $objectHelper.func();
+          $sayHello(job.name);
 
-    context.useHelper('sayHello', sayHelloSpy);
-    context.useHelper('objectHelper', {
-      func: funcSpy,
-    });
+          onJobDone(null, null);
+        });
 
-    context.registerWorker(Paykoun.createWorker('SayHelloWorker', {
-      triggers: ['sayHello'],
-      work: sayHelloWorker,
-    }));
+        context.useHelper('sayHello', sayHelloSpy);
+        context.useHelper('objectHelper', {
+          func: funcSpy,
+        });
 
-    failingWorkerFunc = sinon.spy(function(job, onJobDone) {
-      try {
-        this.$getHelper('unexistingHelper');
-      } catch (e) {
-        onJobDone(e, null);
-      }
+        context.registerWorker(Paykoun.createWorker('SayHelloWorker', {
+          triggers: ['sayHello'],
+          work: sayHelloWorker,
+        }));
 
-      onJobDone(null, null);
-    });
+        failingWorkerFunc = sinon.spy(function(job, onJobDone) {
+          try {
+            this.$getHelper('unexistingHelper');
+          } catch (e) {
+            return onJobDone(e, null);
+          }
 
-    context.registerWorker(Paykoun.createWorker('FailingWorker', {
-      triggers: ['failingTrigger'],
-      work: failingWorkerFunc,
-    }));
+          return onJobDone(null, null);
+        });
 
-    context.run(done);
-  });
+        context.registerWorker(Paykoun.createWorker('FailingWorker', {
+          triggers: ['failingTrigger'],
+          work: failingWorkerFunc,
+        }));
 
-  it('should allow us to use a registered helper', (done) => {
-    context.dontMock('sayHello');
+        context.run(done);
+      });
 
-    queue.pushJob('sayHello', { name: 'Hello world' });
+      it('should allow us to use a registered helper', (done) => {
+        isTestContext && context.dontMock('sayHello');
 
-    queue.flush(() => {
-      expect(sayHelloSpy).to.have.been.called
+        pushJobsInContext([
+          {
+            event: 'sayHello',
+            data: { name: 'Hello world' },
+          },
+        ], context, isTestContext, (err) => {
+          expect(sayHelloSpy).to.have.been.calledOnce
 
-      const helperCall = sayHelloSpy.firstCall;
-      expect(helperCall).to.not.have.thrown();
-      expect(helperCall.args[0]).to.equal('Hello world');
-      done();
-    });
-  });
+          const helperCall = sayHelloSpy.firstCall;
+          expect(helperCall).to.not.have.thrown();
+          expect(helperCall.args[0]).to.equal('Hello world');
+          done();
+        })
+      });
 
-  // Maybe in the long run we want to stub everything? or provide for a way that avoid
-  // setting non function helpers?
-  it('should only stub function helpers', (done) => {
-    queue.pushJob('sayHello', { name: 'Hello world' });
+      // Maybe in the long run we want to stub everything? or provide for a way that avoid
+      // setting non function helpers?
+      it('should only stub function helpers', (done) => {
+        pushJobsInContext([
+          {
+            event: 'sayHello',
+            data: { name: 'Hello world' },
+          },
+        ], context, isTestContext, () => {
+          expect(sayHelloSpy).to.have.been.called;
+          const helperCall = sayHelloSpy.firstCall;
+          expect(helperCall).to.not.have.thrown();
+          expect(helperCall.args[0]).to.equal('Hello world');
+          done();
+        })
+      });
 
-    queue.flush(() => {
-      expect(sayHelloSpy).to.have.been.called;
-      const helperCall = sayHelloSpy.firstCall;
-      expect(helperCall).to.not.have.thrown();
-      expect(helperCall.args[0]).to.equal('Hello world');
-      done();
-    });
-  });
+      it('should throw an error when trying to use an unregistered helper', (done) => {
+        isTestContext && context.dontMock('unexistingHelper');
+        pushJobsInContext([
+          {
+            event: 'failingTrigger',
+            data: { name: 'Hello world' },
+          },
+        ], context, isTestContext, (err) => {
+          // TODO: Make the handling of error the same for test and real context
+          if (isTestContext) {
+            const onDoneCall = failingWorkerFunc.firstCall.args[1];
+            expect(onDoneCall.firstCall.args[0])
+              .to.match(/Error: Trying to use an unregistered helper function/);
+          } else {
+            expect(err).to.match(/Trying to use an unregistered helper function/)
+          }
 
-  it('should throw an error when trying to use an unregistered helper', (done) => {
-    context.dontMock('unexistingHelper');
+          done();
+        })
+      });
 
-    queue.pushJob('failingTrigger', { name: 'Hello world' });
-
-    queue.flush(() => {
-      assert(failingWorkerFunc.called);
-
-      const onDoneCall = failingWorkerFunc.firstCall.args[1];
-
-      expect(onDoneCall.firstCall.args[0])
-        .to.match(/Error: Trying to use an unregistered helper function/);
-      done();
-    });
-  });
-
-  it('helpers are availaible from helpers');
-  it('helpers are availaible using this.$helperName');
-  it('worker cannot overwrite helper property');
-  it('worker running context is not reused by different workers or consecutive runs');
-});
+      it('helpers are availaible from helpers');
+      it('helpers are availaible using this.$helperName');
+      it('worker cannot overwrite helper property');
+      it('worker running context is not reused by different workers or consecutive runs');
+    })
+  })
+})
