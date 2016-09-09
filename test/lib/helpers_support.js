@@ -1,3 +1,5 @@
+'use strict';
+
 /* global beforeEach, describe, it */
 /* eslint-disable no-unused-expressions */
 
